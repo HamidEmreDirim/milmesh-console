@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="tr">
+<head><meta name="robots" content="noindex, nofollow">
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#102b2c">
+  <meta name="description" content="MilMesh kartları için USB ile yazılım güncelleme; Bluetooth üzerinden komponent, haberleşme ve uyku testleri.">
+  <title>MilMesh · Yazılım Güncelleme</title>
+  <link rel="icon" href="assets/mark.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="style.css?v=0.8.0">
+</head>
+<body data-section="update" data-view="update">
+  <aside class="sidebar">
+    <a class="brand" href="#guncelle" aria-label="MilMesh ana sayfa"><img src="assets/mark.svg" width="34" height="34" alt=""><span>milmesh<span class="brand-sub" id="brandSub">WEB KONSOLU</span></span></a>
+    <div class="sidebar-group" data-section-only="update"><div class="workspace-label">YAZILIM GÜNCELLEME</div>
+    <nav aria-label="Güncelleme menüsü"><button class="nav active" data-section="update" aria-current="page"><span class="nav-icon">⟳</span> Firmware güncelle</button></nav></div>
+    <div class="sidebar-group" data-section-only="test"><div class="workspace-label">KART DOĞRULAMA</div>
+    <nav aria-label="Kart testi menüsü">
+      <button class="nav active" data-view="setup"><span class="nav-icon">⇣</span> Kartlar</button>
+      <button class="nav" data-view="components"><span class="nav-icon">▦</span> Komponentler <span class="nav-count" id="navCount">0</span></button>
+      <button class="nav" data-view="power"><span class="nav-icon">⏻</span> Güç ve uyku</button>
+      <button class="nav" data-view="radio"><span class="nav-icon">⌁</span> LoRa haberleşme</button>
+      <button class="nav" data-view="report"><span class="nav-icon">≡</span> Test raporu</button>
+    </nav></div>
+    <div class="sidebar-bottom"><div class="local-dot"></div><div>Veriler bu tarayıcıda<span>Raporu dışa aktararak saklayın.</span></div></div>
+    <div class="version">WEB 0.8.0 <span>ESP32-S3 / USB · BLE</span></div>
+  </aside>
+  <div class="shell">
+    <header class="topbar">
+      <div class="section-tabs" role="tablist" aria-label="Bölüm seçimi">
+        <button class="section-tab active" role="tab" id="tabUpdate" data-section="update" aria-selected="true"><span class="section-icon" aria-hidden="true">⟳</span><span class="section-copy"><b>Yazılım güncelleme</b><small>Sahadaki kart · USB</small></span></button>
+        <button class="section-tab" role="tab" id="tabTest" data-section="test" aria-selected="false" tabindex="-1"><span class="section-icon" aria-hidden="true">▦</span><span class="section-copy"><b>Kart testi</b><small>Tezgah · Bluetooth</small></span></button>
+      </div>
+      <div class="top-actions"><span id="supportBadge" class="compatibility">Web Serial</span><button id="connectTop" class="primary" data-section-only="test">Kartları yönet</button></div></header>
+    <main>
+      <div id="compatibilityNotice" class="notice warning" data-section-only="test" hidden></div>
+      <div id="serialNotice" class="notice warning serial-notice" data-section-only="update" role="status" hidden><div><b>Bu sayfayı bilgisayarda açın.</b><p>Yazılım güncelleme USB bağlantısı (Web Serial) gerektirir. Bu tarayıcı USB erişimi sunmuyor. Sayfayı bilgisayarda <b>Chrome, Edge veya Opera</b> ile açın; iPhone, iPad, Android telefon, Safari ve Firefox desteklenmez.</p></div><button id="copyLink" class="secondary" type="button">Bağlantıyı kopyala</button></div>
+      <section class="page-heading"><div><div class="eyebrow" id="viewEyebrow">YAZILIM GÜNCELLEME</div><h1 id="viewTitle">Her kart için, kayıtlı bir test.</h1><p id="viewDescription">Bluetooth ile bağlanın. Bileşenleri doğrulayın. Sonuçları birlikte görün.</p></div><div class="date-chip" id="dateLabel"></div></section>
+      <section class="board-strip" aria-label="Bağlı kartlar" data-section-only="test"><div class="board-tabs" id="boardTabs"></div><button id="addSecond" class="text-button">＋ İkinci kartı bağla</button></section>
+      <section class="device-card" aria-label="Kart bilgileri" data-section-only="test">
+        <div class="device-art" aria-hidden="true"><svg viewBox="0 0 120 96"><rect x="15" y="9" width="90" height="78" rx="8" fill="#1e6560"/><rect x="40" y="26" width="40" height="43" rx="3" fill="#b7c5b6"/><path d="M49 35h22M49 41h14M49 47h22M49 53h8" stroke="#4b6c64" stroke-width="2"/><g fill="#c4b77c"><path d="M30 22h5v54h-5zM85 22h5v54h-5z"/><rect x="24" y="10" width="14" height="11" rx="2"/><rect x="63" y="73" width="24" height="8" rx="1"/></g><circle cx="28" cy="76" r="3" fill="#8ad4aa"/><path d="M44 15h31M44 20h31M47 76h9" stroke="#71a39a" stroke-width="2"/></svg></div>
+        <div class="device-main"><div class="device-title"><h2 id="boardName">Henüz kart bağlı değil</h2><span class="status-pill" id="connectionStatus">Bağlantı bekleniyor</span></div><p id="boardSubtitle">İlk kartınızı bağlayarak bir test oturumu başlatın.</p><div class="device-meta"><span>MAC <b id="macValue">—</b></span><span>FIRMWARE <b id="fwValue">—</b></span><span>AÇILIŞ <b id="bootValue">—</b></span><span>BESLEME <b id="supplyValue">—</b></span></div></div>
+        <div class="device-actions"><button id="reconnect" class="secondary" hidden>Yeniden bağlan</button><button id="disconnect" class="text-button" hidden>Bağlantıyı kes</button></div>
+      </section>
+      <div class="stats-grid" aria-label="Test özeti" data-section-only="test"><div class="stat"><span>TEST KAPSAMI</span><div><strong id="statTotal">0</strong><small>kontrol</small></div></div><div class="stat"><span><i class="dot pass"></i> GEÇTİ</span><div><strong id="statPass">0</strong><small>doğrulandı</small></div></div><div class="stat"><span><i class="dot fail"></i> KALDI</span><div><strong id="statFail">0</strong><small>inceleme gerekli</small></div></div><div class="stat"><span><i class="dot blocked"></i> BEKLEYEN / EKSİK</span><div><strong id="statPending">0</strong><small>kontrol</small></div></div></div>
+      <section id="operation" class="operation" aria-live="polite" hidden><div class="spinner"></div><div><strong id="operationTitle"></strong><p id="operationText"></p></div><span id="operationTime"></span></section>
+      <div class="content-grid">
+        <div class="primary-column">
+          <section class="panel view" id="view-setup" hidden>
+            <div class="panel-heading"><div><h2>Kartlarını hazırla</h2><p>Adını kaydet, Bluetooth ile bağlan ve testlere geç.</p></div><span class="tag">v0.6.0</span></div>
+            <div class="panel-body">
+              <div class="setup-mode"><span>Kaç kart kullanacaksın?</span><div class="segmented"><button data-device-count="1" class="active">Tek kart</button><button data-device-count="2">İki kart · LoRa</button></div></div>
+              <div class="setup-instructions"><b>1. Kart adını gir</b><span>→</span><b>2. USB’den yükle</b><span>→</span><b>3. Bluetooth ile bağlan</b></div>
+              <div class="two-cards" id="setupCards">
+                <article class="mini-card setup-card" id="setupCardA"><div class="setup-card-title"><div class="setup-role">KART A</div><span class="status-pill" id="setupStateA">Hazırlanacak</span></div>
+                  <label>Kart adı<input id="setupNameA" value="mb_001" maxlength="24" pattern="[A-Za-z0-9_-]{1,24}" spellcheck="false"></label><p id="bleNameA" class="ble-name-preview">Bluetooth adı: mb_001</p>
+                  <p id="portStatusA" class="port-status">USB portu seçilmedi</p>
+                  <div class="setup-upload-actions"><button id="selectPortA" class="secondary">USB portu seç</button><button id="flashA" class="secondary" disabled>Adı kaydet ve yükle</button></div>
+                  <button id="connectUploadedA" class="primary setup-connect">Yazılım yüklü, bağlan</button><p id="setupHintA" class="field-help">Yazılım zaten yüklüyse doğrudan bağlanabilirsiniz.</p>
+                  <button id="replaceCardA" class="text-button" hidden>Bu alan için başka kart seç</button>
+                </article>
+                <article class="mini-card setup-card" id="setupCardB"><div class="setup-card-title"><div class="setup-role">KART B · LoRa karşı cihaz</div><span class="status-pill" id="setupStateB">Hazırlanacak</span></div>
+                  <label>Kart adı<input id="setupNameB" value="mb_004" maxlength="24" pattern="[A-Za-z0-9_-]{1,24}" spellcheck="false"></label><p id="bleNameB" class="ble-name-preview">Bluetooth adı: mb_004</p>
+                  <p id="portStatusB" class="port-status">USB portu seçilmedi</p>
+                  <div class="setup-upload-actions"><button id="selectPortB" class="secondary">USB portu seç</button><button id="flashB" class="secondary" disabled>Adı kaydet ve yükle</button></div>
+                  <button id="connectUploadedB" class="primary setup-connect">Yazılım yüklü, bağlan</button><p id="setupHintB" class="field-help">Yazılım zaten yüklüyse doğrudan bağlanabilirsiniz.</p>
+                  <button id="replaceCardB" class="text-button" hidden>Bu alan için başka kart seç</button>
+                </article>
+              </div>
+              <div class="rail-actions"><button id="flashBoth" class="primary" disabled>İki karta da isim ve yazılım yükle</button></div><div class="flash-progress" id="flashProgress" hidden><progress id="flashProgressBar" max="100" value="0"></progress><span id="flashProgressLabel">Hazırlanıyor</span></div><details class="setup-measurement"><summary>Yükleme ayrıntıları</summary><pre id="flashLog" class="flash-log" aria-live="polite">Yükleme başladığında kimlik ve hash doğrulama kayıtları burada görünür.</pre></details>
+              <p class="field-help">Tarayıcı /dev/cu.usbmodem… yolunu web sayfasına vermez; port seçimi sistem penceresinde yapılır. Verilen isim cihaza kalıcı kaydedilir ve Bluetooth listesinde aynı isim görünür. Her kartın Bağlan düğmesi kendi cihazını seçer. Yükleme eski yazılım ve NVS kayıtlarını siler; yedek alınmaz.</p>
+              <details class="setup-measurement" id="connectionMeasurement"><summary>Bluetooth bağlantısını değerlendir</summary><p id="connectionHint">Bir kart bağlayın.</p><div class="signal-line"><b id="signalValue">Ölçüm için kart bağlayın</b><button id="connectionDiagnostic" class="secondary" disabled>Sinyal ve 20 paket testi</button></div><p class="field-help">“Out of range” tek başına anten arızası anlamına gelmez. Uyku, güç kesilmesi, başka bağlantı veya işletim sistemi de bağlantıyı kesebilir. Sinyal ve paket kayıtları yardımcı ölçümlerdir; anten arızasını tek başına kanıtlamaz. Bluetooth’un 2,4 GHz anten yolu, LoRa’nın 433 MHz anteninden ayrıdır.</p></details>
+            </div>
+          </section>
+          <section class="panel view" id="view-components" hidden>
+            <div class="panel-heading"><div><h2>Komponent testleri</h2><p>Otomatik kontroller ve yönlendirmeli fiziksel adımlar.</p></div><button id="runAll" class="primary" data-needs-board>Komponentleri test et <span>→</span></button></div>
+            <div class="test-toolbar"><div class="segmented" role="group" aria-label="Sonuç filtresi"><button class="active" data-filter="all">Tümü</button><button data-filter="attention">İncelenecek</button><button data-filter="PASS">Geçenler</button></div><span class="table-caption">SONUÇLAR CANLI GÜNCELLENİR</span></div>
+            <div id="testList" class="test-list"></div><div class="panel-body battery-controls"><div class="divider"></div><h3>USB olmadan, yalnız bataryada</h3><p class="muted">Soğuk açılış için önce Güç ve uyku ekranında gerçek güç çevrimini tamamlayın. Bu akışta flash, SW3, IMU, GPS, batarya ölçüm entegresi, 20 saniye BLE ve 20 saniye kararlılık test edilir. LED gözlemi yapılmaz.</p><button id="runBattery" class="secondary" data-needs-board>Batarya testlerini başlat · yaklaşık 1–2 dk</button></div><div id="batteryResults" class="test-list"></div>
+          </section>
+          <section class="panel view" id="view-power" hidden>
+            <div class="panel-heading"><div><h2>Uyutun. Uyandırın. Doğrulayın.</h2><p>Uyanma kaydı gelmeden test geçti sayılmaz.</p></div><span class="tag">Batarya ile</span></div>
+            <div class="panel-body"><div class="notice">Uyku testleri için batarya takılı olsun; USB’yi çıkarın. Uyanıkken LED 1 ve 2 yanar, LED 3 yanıp söner. Uykuya girişte üçü söner; SW3’e o zaman basın. Uyanınca göstergeler yeniden başlar. LED’lerin sönük olması tek başına uyku ile besleme kaybını ayırmaz. Bluetooth uyku sırasında kapanır. Zamanlayıcı veya SW3 kartı uyandırdıktan sonra <b>Yeniden bağlan</b> düğmesini kullanın.</div>
+              <div class="form-grid"><label>Test modu<select id="sleepMode"><option value="LIGHT_TIMER">Hafif uyku → zamanlayıcı</option><option value="LIGHT_SW3">Hafif uyku → SW3</option><option value="DEEP_TIMER">Derin uyku → zamanlayıcı</option><option value="DEEP_SW3">Derin uyku → SW3</option><option value="SOFT_OFF">Yazılımsal bekleme → yalnız SW3</option></select></label><label>Süre / SW3 için zaman aşımı<select id="sleepSeconds"><option value="10" selected>10 saniye</option><option value="30">30 saniye</option><option value="60">60 saniye</option><option value="120">120 saniye</option></select></label></div>
+              <p class="field-help" id="sleepHelp">Hafif uyku sonrasında aynı açılış kimliği korunur; zamanlayıcının uyanma nedeni kontrol edilir.</p>
+              <label class="check-line"><input id="batteryOnly" type="checkbox"> Batarya takılı, USB çıkarılmış ve SW3 bırakılmış durumda.</label>
+              <button id="sleepStart" class="primary" data-needs-board>Uyku testini başlat <span>→</span></button>
+              <div id="powerPending" class="power-pending" hidden></div><button id="clearPower" class="text-button">Karttaki bekleyen güç testini temizle</button>
+              <div class="divider"></div><div class="two-cards"><article class="mini-card"><span class="card-icon">↻</span><h3>Yazılımsal yeniden başlatma</h3><p>Yeni açılış ve yazılım reset nedeni birlikte doğrulanır.</p><button id="restartStart" class="secondary" data-needs-board>Yeniden başlat</button></article><article class="mini-card"><span class="card-icon">⏻</span><h3>Gerçek güç kesme / açma</h3><p>Testi hazırlayın, USB ve bataryayı çıkarın. En az 5 saniye sonra bataryayı takın ve yeniden bağlanın.</p><button id="cycleStart" class="secondary" data-needs-board>Güç çevrimini hazırla</button></article></div>
+              <div class="notice warning">Yazılımsal bekleme, ESP32’nin derin uykusudur; bütün kartın enerjisini kesmez. Mevcut kartta güvenli bir yazılımsal ana güç anahtarı doğrulanmış değil. Gerçek kapalı durum ve uyku akımı, harici ölçüm gerektirir.</div>
+            </div><div id="powerResults" class="test-list"></div>
+          </section>
+          <section class="panel view" id="view-radio" hidden>
+            <div class="panel-heading"><div><h2>İki kart. Gerçek haberleşme.</h2><p>Gönderilen veri, karşı kartın aldığı yükle eşleştirilir.</p></div><span class="tag">433 MHz</span></div>
+            <div class="panel-body"><div class="radio-route"><div><span class="route-dot"></span><b id="radioA">Kart A</b><small>GÖNDERİCİ / ALICI</small></div><span class="route-line">← · · · · →</span><div><span class="route-dot"></span><b id="radioB">Kart B</b><small>ALICI / GÖNDERİCİ</small></div></div>
+              <label class="check-line"><input id="radioReady" type="checkbox"> İki kartta uygun anten bağlı; 5 V besleme ve bütün LoRa GND bağlantıları kontrol edildi.</label>
+              <p class="field-help">Her yönde 5 eşsiz paket gönderilir; karşı karttaki CRC ve tüm yük baytları doğrulanır. Ardından 0,2 / 1 / 2 W için 6 / 15 / 21 dBm çip komutları alıcı tarafta uygulanır ve iki yönde paket testi yapılır. Gerçek RF watt ölçümü, düşük güç / ayrım kontrolü ve BLE + LoRa eşzamanlılık stres testi bu kapsamda yoktur.</p>
+              <div class="rail-actions"><button id="radioPair" class="primary" data-needs-board>Haberleşme + profil testini başlat <span>→</span></button><button id="radioDigital" class="secondary" data-needs-board>Seçili kartta dijital test</button></div>
+            </div><div id="radioResults" class="test-list"></div>
+          </section>
+          <section class="panel view" id="view-report" hidden>
+            <div class="panel-heading"><div><h2>Test raporu</h2><p>Geçenler ✓, kalanlar ✕. Eksik ve çalıştırılmayan adımlar ayrıca gösterilir.</p></div></div><div class="panel-body"><div id="reportIdentity"></div><label>Operatör / revizyon notu<textarea id="reportNotes" rows="3" placeholder="Örn. LED 2 parlaklığı düşük, montaj kontrolü gerekli."></textarea></label><div class="rail-actions"><button id="downloadPdf" class="primary">PDF indir ↓</button><button id="downloadPairPdf" class="secondary">İki kartı tek PDF indir ↓</button><button id="downloadJson" class="secondary">JSON + ham kayıtlar ↓</button><button id="downloadCsv" class="secondary">CSV ↓</button><button id="printReport" class="secondary">Yazdır ↗</button><button id="newSession" class="text-button">Yeni kartlar için oturumu kapat</button></div><p class="field-help">Tarayıcı verileri silinebilir. Her kartın raporunu dışa aktarın. Ham başarısızlıklar saklanır. Düzelt düğmesiyle işareti elle değiştirebilir; PDF ve JSON’da operatör düzeltmesi olarak gösterebilirsiniz.</p></div><div id="reportResults" class="test-list"></div><div class="panel-body" id="reportHistory"></div>
+          </section>
+          <section class="panel view" id="view-update">
+            <div class="panel-heading"><div><h2>MilMesh firmware güncelle</h2><p>Üretim yazılımını USB ile günceller. Kart adı, ayarlar ve mesajlar korunur.</p></div><span class="tag" id="prodTag">Paket yükleniyor</span></div>
+            <div class="panel-body">
+              <div class="setup-instructions prod-flow" aria-label="Güncelleme adımları"><b>1. USB’ye tak</b><span>→</span><b>2. Port seç</b><span>→</span><b>3. Kartı oku ve güncelle</b><span>→</span><b>4. Açılış doğrulaması</b></div>
+              <div class="notice" id="prodNotice">Bu akış test firmware’i değil, cihazın kullanıldığı <b>MilMesh üretim yazılımını</b> yükler. Flash tamamen silinmez: yalnız önyükleyici, bölüm tablosu, otadata ve uygulama (ota_0) yazılır. NVS (cihaz adı, PIN, Bluetooth eşleşmeleri, kanallar, radyo ayarları), çevrimdışı mesajlar (scratch), autolog ve fabrika kart adı (0x340000) yazılmaz.</div>
+              <div class="prod-grid">
+                <div class="prod-box"><span>PAKETTEKİ YAZILIM</span><b id="prodVersion">—</b><small id="prodBuild">—</small></div>
+                <div class="prod-box"><span>KART</span><b id="prodBoard">—</b><small id="prodBoardDetail">USB portu seçin.</small></div>
+                <div class="prod-box"><span>SON GÜNCELLEME</span><b id="prodResult">—</b><small id="prodResultDetail">Bu tarayıcıda kayıt yok.</small></div>
+              </div>
+                            <p id="prodPortStatus" class="port-status">USB portu seçilmedi</p>
+              <div class="rail-actions"><button id="prodSelectPort" class="secondary">USB portu seç</button><button id="prodStart" class="primary" disabled>Kartı oku ve güncelle <span>→</span></button></div>
+              <div class="flash-progress" id="prodProgress" hidden><progress id="prodProgressBar" max="100" value="0"></progress><span id="prodProgressLabel">Hazırlanıyor</span></div>
+              <details class="setup-measurement" id="prodDetails"><summary>Güncelleme ayrıntıları</summary><pre id="prodLog" class="flash-log" aria-live="polite">Güncelleme başladığında kart kimliği, yazılan bölgeler, MD5 ve açılış satırı burada görünür.</pre></details>
+              <div class="divider"></div><h3 class="prod-h3">Yazılan bölgeler</h3><div id="prodPlan" class="prod-plan"></div>
+              <div id="prodHistory"></div>
+              <p class="field-help">Tarayıcı /dev/cu.usbmodem… yolunu sayfaya vermez; port sistem penceresinde seçilir. Güncelleme yarıda kalırsa kart açılmayabilir; aynı adımlarla yeniden yükleyin (gerekirse BOOT basılıyken RESET). Kart adı yalnız okunur; değiştirmek için test firmware akışı gerekir ve o akış flash’ı tamamen siler.</p>
+            </div>
+          </section>
+        </div>
+        <aside class="context-column">
+          <section class="panel guide update-guide" data-section-only="update"><div class="eyebrow">GÜNCELLEME AKIŞI</div><h2>Takın, seçin, güncelleyin.</h2><ol><li><span>01</span><div><b>USB’ye takın</b><p>Kartı veri kablosuyla bilgisayara bağlayın. Açık seri monitörleri ve Kart testi sekmesindeki USB işlemlerini kapatın.</p></div></li><li><span>02</span><div><b>Portu seçin</b><p>“USB portu seç” düğmesiyle sistem penceresinden kartın portunu seçin.</p></div></li><li><span>03</span><div><b>Kartı okuyun ve güncelleyin</b><p>Kart adı, mevcut ve yeni sürüm gösterilir; onaylamadan hiçbir şey yazılmaz.</p></div></li><li><span>04</span><div><b>Açılışı doğrulayın</b><p>Kart yeniden başlar; açılış satırındaki build kimliği paketle karşılaştırılır.</p></div></li></ol></section>
+          <section class="panel requirement" data-section-only="update"><b>Bilgisayar gerekli</b><p>Chrome, Edge veya Opera (Web Serial). Telefon, tablet, Safari ve Firefox USB erişimi sunmaz.</p></section>
+          <section class="panel guide" data-section-only="test"><div class="eyebrow">TEST AKIŞI</div><h2>Porttan rapora.</h2><ol><li><span>01</span><div><b>Portu seçin ve yükleyin</b><p>PCB adını yazın. USB portunu seçip test firmware’ini yükleyin.</p></div></li><li><span>02</span><div><b>Bluetooth ile test edin</b><p>Kartı bağlayın. LED, SW3, IMU ve GPS adımlarını uygulayın.</p></div></li><li><span>03</span><div><b>Güç durumlarını deneyin</b><p>USB’yi çıkarın; uyku ve uyanmayı bataryayla doğrulayın.</p></div></li><li><span>04</span><div><b>PDF raporunu indirin</b><p>Tek kart veya iki kart için tik / çarpı raporunu saklayın.</p></div></li></ol></section>
+          <section class="panel activity" data-section-only="test"><div class="activity-heading"><h2>Test günlüğü</h2><span id="logCount">0 kayıt</span></div><div id="activityLog" role="log" aria-live="polite"><div class="empty-log"><span>⌁</span><p>İlk bağlantıdan sonra<br>kart kayıtları burada görünür.</p></div></div></section>
+          <a class="help-link" href="KULLANIM.html" target="_blank" rel="noopener">Bağlantı ve firmware kurulumu <span>↗</span></a>
+        </aside>
+      </div>
+      <footer>MilMesh donanım test ortamı <span>Ölçülen sonuçlar. Görünür kapsam.</span></footer>
+    </main>
+  </div>
+  <dialog id="promptDialog"><form id="promptForm" method="dialog"><div class="dialog-eyebrow" id="dialogEyebrow">TEST ADIMI</div><h2 id="dialogTitle"></h2><p id="dialogText"></p><dl id="dialogFacts" class="dialog-facts" hidden></dl><div id="dialogNotes"></div><div id="dialogFields"></div><div id="dialogError" class="dialog-error" role="alert"></div><div id="dialogButtons" class="dialog-buttons"></div></form></dialog>
+  <div id="toast" class="toast" role="alert" hidden></div>
+  <script type="module" src="app.js?v=0.8.0"></script>
+</body></html>

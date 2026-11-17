@@ -1,0 +1,32 @@
+{
+  "version": "0.6.0",
+  "chip": "ESP32-S3",
+  "flash_bytes": 16777216,
+  "elf_sha256": "98e3225da6e12a7da661f44627f56b9249ed2e830d5cb1cb93349b7e41ef03c0",
+  "images": [
+    {
+      "name": "bootloader.bin",
+      "address": 0,
+      "bytes": 18656,
+      "sha256": "7fd02af56bab298999ea751459420dd5ada512b25230bb14a9750bc4867ffc6c"
+    },
+    {
+      "name": "partition-table.bin",
+      "address": 32768,
+      "bytes": 3072,
+      "sha256": "19b7bf039f8f4b730a6f16ebd4f8f6e8b75ec0d16899930bd1c5f209668e0311"
+    },
+    {
+      "name": "mc_board_test.bin",
+      "address": 65536,
+      "bytes": 599056,
+      "sha256": "2cd669921ad30fadde7be78c864a9a0012de6376bb9c72a1c70c1d169eb5e38a"
+    }
+  ],
+  "identity": {
+    "address": 3407872,
+    "size": 4096,
+    "schema": 1,
+    "name_max": 24
+  }
+}
